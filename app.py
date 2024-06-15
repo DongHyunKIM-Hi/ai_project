@@ -27,51 +27,64 @@ with st.form("개인 input data를 입력해주세요"):
 
 if st.button('생성하기'):
     with st.spinner('생성 중입니다.'):
-        chat_completion = client.chat.completions.create(
+        # 10년 후 예측
+        after_10 = client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
-                    "content": "이름은" + input_name + "이고 mbti는 " + input_mbti + "이고 생년월일은 " + input_birth.strftime('%Y-%m-%d'),
+                    "content": "이름은 " + input_name + "이고 mbti는 " + input_mbti + "이고 생년월일은 " + input_birth.strftime('%Y-%m-%d'),
                 },
                 {
                     "role": "system",
-                    "content": "입력 받은 인물에 대한 150자 이내의 10년후 미래를 예측해줘 미래가 긍정적인지 부정적인지는 100% 중에서 " +  str(volume) + "만큼 긍정적이게 작성해줘" ,
+                    "content": "입력 받은 인물에 대한 150자 이내의 10년후 미래를 예측해줘 미래가 긍정적인지 부정적인지는 100% 중에서 " + str(volume) + "만큼 긍정적이게 작성해줘",
                 }
             ],
             model="gpt-4",
         )
     
-        # 이미지 생성 요청
-        response = client.images.generate(
+        # 10년 후 이미지 생성 요청
+        after_10_image = client.images.generate(
             model="dall-e-3",
-            prompt=chat_completion.choices[0].message.content + "에 어울리는 이미지",
+            prompt=after_10.choices[0].message.content + "에 어울리는 이미지",
+            size="1024x1024",
+            quality="standard",
+            n=1
+        )
+
+        # 40년 후 예측
+        after_40 = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "이름은 " + input_name + "이고 mbti는 " + input_mbti + "이고 생년월일은 " + input_birth.strftime('%Y-%m-%d'),
+                },
+                {
+                    "role": "system",
+                    "content": "입력 받은 인물에 대한 150자 이내의 40년후 미래를 예측해줘 미래가 긍정적인지 부정적인지는 100% 중에서 " + str(volume) + "만큼 긍정적이게 작성해줘",
+                }
+            ],
+            model="gpt-4",
+        )
+    
+        # 40년 후 이미지 생성 요청
+        after_40_image = client.images.generate(
+            model="dall-e-3",
+            prompt=after_40.choices[0].message.content + "에 어울리는 이미지",
             size="1024x1024",
             quality="standard",
             n=1
         )
     
-    result = chat_completion.choices[0].message.content
-    image_url = response.data[0].url
-    st.write(result)
+    # 10년 후 결과와 이미지 표시
+    result_10 = after_10.choices[0].message.content
+    image_url_10 = after_10_image.data[0].url
+    st.write("10년 후의 미래 예측:")
+    st.write(result_10)
+    st.image(image_url_10)
 
-    # 애니메이션을 위한 HTML 및 CSS 삽입
-    animation_html = f"""
-    <style>
-    .rotate-and-fade {{
-        animation: spin-and-fade 4s forwards;
-    }}
-    @keyframes spin-and-fade {{
-        0% {{
-            transform: rotate(0deg);
-            opacity: 1;
-        }}
-        100% {{
-            transform: rotate(360deg);
-            opacity: 0;
-        }}
-    }}
-    </style>
-    <img src="{image_url}" class="rotate-and-fade" style="width:100%;max-width:600px;" />
-    """
-    
-    st.markdown(animation_html, unsafe_allow_html=True)
+    # 40년 후 결과와 이미지 표시
+    result_40 = after_40.choices[0].message.content
+    image_url_40 = after_40_image.data[0].url
+    st.write("40년 후의 미래 예측:")
+    st.write(result_40)
+    st.image(image_url_40)
